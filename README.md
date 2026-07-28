@@ -1,5 +1,5 @@
 # John Lester M. Sunga
-## INF231MWA
+## INF 231 MWA
 ## CTADMOBL Advance Mobile Programming
 
 A Flutter project that focuses on advance topics. Covering the Mobile to Web transactions.
