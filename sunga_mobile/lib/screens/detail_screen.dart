@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+// constants
+import '../constants.dart';
+
 // models
-import '../models/product_model.dart';
+import '../models/product.dart';
+
+// services
+import '../services/cart_service.dart';
 
 // widgets
 import '../widgets/custom_text.dart';
@@ -11,15 +17,15 @@ import '../widgets/custom_text.dart';
 // Enhancement 2: details page shown when a product card is tapped, displaying
 // the full product info (images, price, description, specs, reviews) fetched
 // from the API via the Product model.
-class ProductDetailScreen extends StatefulWidget {
+class DetailScreen extends StatefulWidget {
   final Product product;
-  const ProductDetailScreen({super.key, required this.product});
+  const DetailScreen({super.key, required this.product});
 
   @override
-  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+  State<DetailScreen> createState() => _DetailScreenState();
 }
 
-class _ProductDetailScreenState extends State<ProductDetailScreen> {
+class _DetailScreenState extends State<DetailScreen> {
   final PageController _imageController = PageController();
   int _imageIndex = 0;
 
@@ -27,6 +33,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   void dispose() {
     _imageController.dispose();
     super.dispose();
+  }
+
+  // Enhancement 3: dummyjson's /carts/add simulates the update and returns
+  // the recomputed cart, but does not persist it server-side.
+  Future<void> _addToCart(BuildContext context, Product product) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final cart = await CartService().addToCart(
+        userId: demoUserId,
+        products: [
+          {'id': product.id, 'quantity': 1},
+        ],
+      );
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            '${product.title} added · cart total \$${cart.discountedTotal.toStringAsFixed(2)}',
+          ),
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Failed to add to cart: $e')));
+    }
   }
 
   @override
@@ -44,6 +73,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           text: product.title,
           fontSize: 18.sp,
           fontWeight: FontWeight.w600,
+        ),
+      ),
+      // Enhancement 3: https://dummyjson.com/carts/add — adds this product
+      // to the demo user's cart by passing its id/quantity to CartService.
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(16.r),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _addToCart(context, product),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10.h),
+                child: CustomText(
+                  text: 'Add to Cart',
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
       body: SafeArea(

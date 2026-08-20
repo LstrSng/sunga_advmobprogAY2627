@@ -3,13 +3,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 // models
-import '../models/product_model.dart';
+import '../models/product.dart';
 
 // services
 import '../services/product_service.dart';
 
 // screens
-import 'product_detail_screen.dart';
+import 'detail_screen.dart';
 
 // widgets
 import '../widgets/custom_text.dart';
@@ -139,7 +139,7 @@ class _ProductScreenState extends State<ProductScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  ProductDetailScreen(product: product),
+                                  DetailScreen(product: product),
                             ),
                           );
                         },
