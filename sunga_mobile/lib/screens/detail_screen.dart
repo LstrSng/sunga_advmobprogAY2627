@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-// constants
-import '../constants.dart';
-
 // models
 import '../models/product.dart';
 
 // services
 import '../services/cart_service.dart';
+import '../services/user_service.dart';
 
 // widgets
 import '../widgets/custom_text.dart';
@@ -35,13 +33,15 @@ class _DetailScreenState extends State<DetailScreen> {
     super.dispose();
   }
 
-  // Enhancement 3: dummyjson's /carts/add simulates the update and returns
-  // the recomputed cart, but does not persist it server-side.
+  // Enhancement 3: cart is scoped to the signed-in user's real id. dummyjson's
+  // /carts/add simulates the update and returns the recomputed cart, but
+  // does not persist it server-side.
   Future<void> _addToCart(BuildContext context, Product product) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
+      final user = await UserService().getUser();
       final cart = await CartService().addToCart(
-        userId: demoUserId,
+        userId: user.id,
         products: [
           {'id': product.id, 'quantity': 1},
         ],

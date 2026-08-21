@@ -3,7 +3,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'product_screen.dart';
 import 'cart_screen.dart';
+import 'profile_screen.dart';
 
+import '../constants.dart';
+import '../services/user_service.dart';
 import '../widgets/custom_text.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,27 +20,44 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final PageController _pageController = PageController();
+  String _profileName = 'Profile';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileName();
+  }
+
+  // Enhancement 3: the Profile tab's header uses the saved user's first
+  // name, read the same way ProfileScreen reads it (via UserService).
+  Future<void> _loadProfileName() async {
+    final user = await UserService().getUser();
+    if (!mounted || user.firstName.isEmpty) return;
+    setState(() {
+      _profileName = user.firstName;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final onProfileTab = _selectedIndex == 2;
+
     return PopScope(
       canPop: false,
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
           elevation: 2,
+          backgroundColor: onProfileTab ? brandNavy : null,
+          foregroundColor: onProfileTab ? Colors.white : null,
           title: (_selectedIndex == 0)
               ? Image.asset(
                   'assets/images/nubdexchange_logo.png', scale: 11.sp,)
               : CustomText(
-                  text: (_selectedIndex == 1)
-                      ? 'Cart'
-                      : (_selectedIndex == 2)
-                      ? 'Profile'
-                      : 'Home',
+                  text: (_selectedIndex == 1) ? 'Cart' : _profileName,
                   fontSize: 20.sp,
-                  // color: FB_LIGHT_PRIMARY,
                   fontWeight: FontWeight.w600,
+                  color: onProfileTab ? Colors.white : null,
                 ),
           actions: [
             IconButton(
@@ -54,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: const <Widget>[
             ProductScreen(),
             CartScreen(),
-            Center(child: CustomText(text: 'Profile', fontSize: 16)),
+            ProfileScreen(),
           ],
           onPageChanged: (page) {
             setState(() {
@@ -81,6 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
         floatingActionButton: _selectedIndex == 1
             ? null
             : FloatingActionButton(
+                backgroundColor: Colors.deepPurple.shade50,
+                foregroundColor: Colors.deepPurple.shade700,
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Chat coming soon')),

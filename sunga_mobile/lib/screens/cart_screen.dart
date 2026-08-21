@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-// constants
-import '../constants.dart';
-
 // models
 import '../models/cart.dart';
 
 // services
 import '../services/cart_service.dart';
 import '../services/product_service.dart';
+import '../services/user_service.dart';
 
 // screens
 import 'detail_screen.dart';
@@ -32,6 +30,7 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   List<CartProduct> _items = [];
   double _discountedTotal = 0;
+  int? _userId;
   bool _loading = true;
   String? _error;
 
@@ -41,15 +40,19 @@ class _CartScreenState extends State<CartScreen> {
     _loadCart();
   }
 
+  // Enhancement 3: cart is scoped to the signed-in user's real id (read
+  // from the saved user data) instead of a hardcoded demo id.
   Future<void> _loadCart() async {
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final carts = await CartService().getCartsByUser(demoUserId);
+      final user = await UserService().getUser();
+      final carts = await CartService().getCartsByUser(user.id);
       final cart = carts.isNotEmpty ? carts.first : null;
       setState(() {
+        _userId = user.id;
         _items = cart?.products ?? [];
         _discountedTotal = cart?.discountedTotal ?? 0;
         _loading = false;
@@ -65,6 +68,9 @@ class _CartScreenState extends State<CartScreen> {
   // Enhancement 3: resubmits every line item with its new quantity to
   // /carts/add and refreshes totals from the recomputed response.
   Future<void> _changeQuantity(CartProduct item, int delta) async {
+    final userId = _userId;
+    if (userId == null) return;
+
     final newQuantity = item.quantity + delta;
     if (newQuantity < 1) return;
 
@@ -79,7 +85,7 @@ class _CartScreenState extends State<CartScreen> {
 
     try {
       final cart = await CartService().addToCart(
-        userId: demoUserId,
+        userId: userId,
         products: products,
       );
       setState(() {

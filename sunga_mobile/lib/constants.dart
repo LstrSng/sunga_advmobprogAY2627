@@ -1,7 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 var host = dotenv.env['HOST'];
 
-// Enhancement 3: there is no auth/session in this app yet, so cart calls
-// are scoped to a fixed demo user id (see https://dummyjson.com/docs/carts).
-const demoUserId = 1;
+// Shared brand color for the splash background, the signin button, and the
+// Profile tab's header.
+const brandNavy = Color(0xFF2A2A72);
