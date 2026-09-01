@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 // models
 import '../models/product.dart';
@@ -309,14 +308,15 @@ class _DetailScreenState extends State<DetailScreen> {
             itemCount: images.length,
             onPageChanged: (index) => setState(() => _imageIndex = index),
             itemBuilder: (context, index) {
-              return CachedNetworkImage(
-                imageUrl: images[index],
+              return Image.network(
+                images[index],
                 fit: BoxFit.cover,
                 width: double.infinity,
-                placeholder: (_, _) => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                errorWidget: (_, _, _) => Center(
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+                },
+                errorBuilder: (_, _, _) => Center(
                   child: Icon(Icons.image, size: 48.sp),
                 ),
               );

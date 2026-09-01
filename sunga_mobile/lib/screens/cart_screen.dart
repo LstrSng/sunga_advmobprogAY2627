@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 // models
 import '../models/cart.dart';
@@ -51,6 +50,7 @@ class _CartScreenState extends State<CartScreen> {
       final user = await UserService().getUser();
       final carts = await CartService().getCartsByUser(user.id);
       final cart = carts.isNotEmpty ? carts.first : null;
+      if (!mounted) return;
       setState(() {
         _userId = user.id;
         _items = cart?.products ?? [];
@@ -58,6 +58,7 @@ class _CartScreenState extends State<CartScreen> {
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _loading = false;
@@ -88,6 +89,7 @@ class _CartScreenState extends State<CartScreen> {
         userId: userId,
         products: products,
       );
+      if (!mounted) return;
       setState(() {
         _items = cart.products;
         _discountedTotal = cart.discountedTotal;
@@ -125,27 +127,69 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     if (_error != null) {
-      return Center(child: CustomText(text: 'Error: $_error', fontSize: 14.sp));
-    }
-
-    if (_items.isEmpty) {
       return Center(
-        child: CustomText(text: 'Your cart is empty.', fontSize: 14.sp),
+        child: Padding(
+          padding: EdgeInsets.all(24.r),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CustomText(text: 'Error: $_error', fontSize: 14.sp),
+              SizedBox(height: 12.h),
+              ElevatedButton.icon(
+                onPressed: _loadCart,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.separated(
-            padding: EdgeInsets.all(16.r),
-            itemCount: _items.length,
-            separatorBuilder: (_, _) => SizedBox(height: 12.h),
-            itemBuilder: (context, index) => _buildItemRow(_items[index]),
-          ),
+    if (_items.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: _loadCart,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(height: 120.h),
+            Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.shopping_cart_outlined, size: 64.sp, color: Colors.grey),
+                  SizedBox(height: 12.h),
+                  CustomText(text: 'Your cart is empty.', fontSize: 14.sp),
+                  SizedBox(height: 12.h),
+                  ElevatedButton.icon(
+                    onPressed: _loadCart,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Refresh'),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        _buildFooter(),
-      ],
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadCart,
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(16.r),
+              itemCount: _items.length,
+              separatorBuilder: (_, _) => SizedBox(height: 12.h),
+              itemBuilder: (context, index) => _buildItemRow(_items[index]),
+            ),
+          ),
+          _buildFooter(),
+        ],
+      ),
     );
   }
 
@@ -165,13 +209,35 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8.r),
-                      child: CachedNetworkImage(
-                        imageUrl: item.thumbnail,
-                        width: 56.w,
-                        height: 56.w,
-                        fit: BoxFit.cover,
-                        errorWidget: (_, _, _) => Icon(Icons.image, size: 24.sp),
-                      ),
+                      child: item.thumbnail.isNotEmpty
+                          ? Image.network(
+                              item.thumbnail,
+                              width: 56.w,
+                              height: 56.w,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return SizedBox(
+                                  width: 56.w,
+                                  height: 56.w,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (_, _, _) => Container(
+                                width: 56.w,
+                                height: 56.w,
+                                color: Colors.grey.shade200,
+                                child: Icon(Icons.image, size: 24.sp),
+                              ),
+                            )
+                          : Container(
+                              width: 56.w,
+                              height: 56.w,
+                              color: Colors.grey.shade200,
+                              child: Icon(Icons.image, size: 24.sp),
+                            ),
                     ),
                     SizedBox(width: 12.w),
                     Expanded(

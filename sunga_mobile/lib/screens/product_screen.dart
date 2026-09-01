@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 // models
 import '../models/product.dart';
@@ -147,15 +146,28 @@ class _ProductScreenState extends State<ProductScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: CachedNetworkImage(
-                                imageUrl: product.thumbnail,
+                              child: Image.network(
+                                product.thumbnail,
                                 fit: BoxFit.cover,
                                 width: double.infinity,
-                                placeholder: (_, _) => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                                errorWidget: (_, _, _) =>
-                                    Icon(Icons.image, size: 24.sp),
+                                loadingBuilder: (context, child, progress) {
+                                  if (progress == null) return child;
+                                  return Center(
+                                    child: SizedBox(
+                                      width: 24.w,
+                                      height: 24.w,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        value: progress.expectedTotalBytes != null
+                                            ? progress.cumulativeBytesLoaded /
+                                                progress.expectedTotalBytes!
+                                            : null,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Center(child: Icon(Icons.image_not_supported, size: 24.sp)),
                               ),
                             ),
                             Padding(

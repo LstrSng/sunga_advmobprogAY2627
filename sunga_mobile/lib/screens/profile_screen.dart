@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 // models
 import '../models/user.dart';
@@ -73,14 +72,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               radius: 50.r,
                               backgroundColor: Colors.grey.shade200,
                               child: ClipOval(
-                                child: CachedNetworkImage(
-                                  imageUrl: user.image,
-                                  width: 100.r,
-                                  height: 100.r,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (_, _, _) =>
-                                      Icon(Icons.person, size: 50.sp),
-                                ),
+                                child: user.image.isNotEmpty
+                                    ? Image.network(
+                                        user.image,
+                                        width: 100.r,
+                                        height: 100.r,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (context, child, progress) {
+                                          if (progress == null) return child;
+                                          return const Center(
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          );
+                                        },
+                                        errorBuilder: (_, _, _) =>
+                                            Icon(Icons.person, size: 50.sp),
+                                      )
+                                    : Icon(Icons.person, size: 50.sp),
                               ),
                             ),
                             SizedBox(height: 14.h),

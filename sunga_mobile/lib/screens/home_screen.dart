@@ -46,13 +46,16 @@ class _HomeScreenState extends State<HomeScreen> {
       canPop: false,
       child: Scaffold(
         appBar: AppBar(
+          centerTitle: false,
           automaticallyImplyLeading: false,
           elevation: 2,
           backgroundColor: onProfileTab ? brandNavy : null,
           foregroundColor: onProfileTab ? Colors.white : null,
           title: (_selectedIndex == 0)
               ? Image.asset(
-                  'assets/images/nubdexchange_logo.png', scale: 11.sp,)
+                  'assets/images/nubdexchange_logo.png',
+                  scale: 11.sp,
+                )
               : CustomText(
                   text: (_selectedIndex == 1) ? 'Cart' : _profileName,
                   fontSize: 20.sp,

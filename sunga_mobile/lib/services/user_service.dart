@@ -11,15 +11,17 @@ class UserService {
     String username,
     String password,
   ) async {
-    final response = await http.post(
-      Uri.parse('$host/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'username': username,
-        'password': password,
-        'expiresInMins': 60,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('$host/auth/login'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'username': username,
+            'password': password,
+            'expiresInMins': 60,
+          }),
+        )
+        .timeout(const Duration(seconds: 10));
 
     if (response.statusCode == 200) {
       data = jsonDecode(response.body);

@@ -5,14 +5,16 @@ import '../models/product.dart';
 
 class ProductService {
   Future<List<Product>> getAllProducts() async {
-    final response = await http.get(Uri.parse('$host/products?limit=10'));
+    final response = await http
+        .get(Uri.parse('$host/products?limit=0'))
+        .timeout(const Duration(seconds: 10));
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = jsonDecode(response.body);
       final List productsJson = data['products'] ?? [];
       return productsJson.map((json) => Product.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load products');
+      throw Exception('Failed to load products (Status: ${response.statusCode})');
     }
   }
 
@@ -20,12 +22,14 @@ class ProductService {
   // summary, so opening DetailScreen from the cart needs the full product
   // fetched by id.
   Future<Product> getProductById(int id) async {
-    final response = await http.get(Uri.parse('$host/products/$id'));
+    final response = await http
+        .get(Uri.parse('$host/products/$id'))
+        .timeout(const Duration(seconds: 10));
 
     if (response.statusCode == 200) {
       return Product.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to load product $id');
+      throw Exception('Failed to load product $id (Status: ${response.statusCode})');
     }
   }
 }
