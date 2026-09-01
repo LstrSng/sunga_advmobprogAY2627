@@ -17,9 +17,9 @@ import 'detail_screen.dart';
 import '../widgets/custom_text.dart';
 
 // Cart tab (embedded in HomeScreen's PageView, no own Scaffold/AppBar).
-// Enhancement 3: loads one user's cart via CartService.getCartsByUser and
+// Lab Activity 3 - Enhancement 3: loads one user's cart via CartService.getCartsByUser and
 // keeps totals in sync through CartService.addToCart when quantities change.
-// Enhancement 1: tapping an item opens its full DetailScreen.
+// Lab Activity 3 - Enhancement 1: tapping an item opens its full DetailScreen.
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -40,7 +40,7 @@ class _CartScreenState extends State<CartScreen> {
     _loadCart();
   }
 
-  // Enhancement 3: cart is scoped to the signed-in user's real id (read
+  // Lab Activity 4 - Enhancement 3: cart is scoped to the signed-in user's real id (read
   // from the saved user data) instead of a hardcoded demo id.
   Future<void> _loadCart() async {
     setState(() {
@@ -65,7 +65,7 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
-  // Enhancement 3: resubmits every line item with its new quantity to
+  // Lab Activity 3 - Enhancement 3: resubmits every line item with its new quantity to
   // /carts/add and refreshes totals from the recomputed response.
   Future<void> _changeQuantity(CartProduct item, int delta) async {
     final userId = _userId;
@@ -100,7 +100,7 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
-  // Enhancement 1: cart items only carry a product summary, so the full
+  // Lab Activity 3 - Enhancement 1: cart items only carry a product summary, so the full
   // product is fetched by id before opening DetailScreen.
   Future<void> _openDetail(int productId) async {
     try {
@@ -158,7 +158,7 @@ class _CartScreenState extends State<CartScreen> {
         child: Row(
           children: [
             Expanded(
-              // Enhancement 1: tap the item (image/text) to view its detail.
+              // Lab Activity 3 - Enhancement 1: tap the item (image/text) to view its detail.
               child: InkWell(
                 onTap: () => _openDetail(item.id),
                 child: Row(

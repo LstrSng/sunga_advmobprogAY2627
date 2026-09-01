@@ -10,7 +10,7 @@ import '../services/user_service.dart';
 // widgets
 import '../widgets/custom_text.dart';
 
-// Enhancement 2: sign-in UI built around UserService's login/save flow —
+// Lab Activity 4 - Enhancement 2: sign-in UI built around UserService's login/save flow —
 // the form only handles input/validation/loading state, all the
 // authentication logic (loginUser + saveUserData) lives in UserService.
 class SigninScreen extends StatefulWidget {

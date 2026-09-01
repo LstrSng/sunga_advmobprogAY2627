@@ -12,7 +12,7 @@ import '../services/user_service.dart';
 // widgets
 import '../widgets/custom_text.dart';
 
-// Enhancement 2: details page shown when a product card is tapped, displaying
+// Lab Activity 2 - Enhancement 2: details page shown when a product card is tapped, displaying
 // the full product info (images, price, description, specs, reviews) fetched
 // from the API via the Product model.
 class DetailScreen extends StatefulWidget {
@@ -33,7 +33,7 @@ class _DetailScreenState extends State<DetailScreen> {
     super.dispose();
   }
 
-  // Enhancement 3: cart is scoped to the signed-in user's real id. dummyjson's
+  // Lab Activity 4 - Enhancement 3: cart is scoped to the signed-in user's real id. dummyjson's
   // /carts/add simulates the update and returns the recomputed cart, but
   // does not persist it server-side.
   Future<void> _addToCart(BuildContext context, Product product) async {
@@ -75,7 +75,7 @@ class _DetailScreenState extends State<DetailScreen> {
           fontWeight: FontWeight.w600,
         ),
       ),
-      // Enhancement 3: https://dummyjson.com/carts/add — adds this product
+      // Lab Activity 3 - Enhancement 3: https://dummyjson.com/carts/add — adds this product
       // to the demo user's cart by passing its id/quantity to CartService.
       bottomNavigationBar: SafeArea(
         child: Padding(

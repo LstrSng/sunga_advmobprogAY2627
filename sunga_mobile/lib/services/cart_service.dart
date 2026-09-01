@@ -4,7 +4,7 @@ import '../constants.dart';
 import '../models/cart.dart';
 
 class CartService {
-  // Enhancement 3: https://dummyjson.com/docs/carts documents GET
+  // Lab Activity 3 - Enhancement 3: https://dummyjson.com/docs/carts documents GET
   // /carts/user/{userId} to scope the fetch to a single user's cart instead
   // of the full /carts list.
   Future<List<Cart>> getCartsByUser(int userId) async {
@@ -19,7 +19,7 @@ class CartService {
     }
   }
 
-  // Enhancement 3: POST /carts/add simulates adding/updating a user's cart
+  // Lab Activity 3 - Enhancement 3: POST /carts/add simulates adding/updating a user's cart
   // by passing the full product => quantity list; dummyjson recomputes and
   // returns the cart (it does not persist server-side).
   Future<Cart> addToCart({

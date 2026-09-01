@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadProfileName();
   }
 
-  // Enhancement 3: the Profile tab's header uses the saved user's first
+  // Lab Activity 4 - Enhancement 3: the Profile tab's header uses the saved user's first
   // name, read the same way ProfileScreen reads it (via UserService).
   Future<void> _loadProfileName() async {
     final user = await UserService().getUser();
@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
         body: PageView(
           physics: const NeverScrollableScrollPhysics(),
           controller: _pageController,
-          // Enhancement 1: Cart is now a tab (index 1) instead of a pushed
+          // Lab Activity 3 - Enhancement 1: Cart is now a tab (index 1) instead of a pushed
           // screen, sharing this Scaffold's AppBar/bottom nav.
           children: const <Widget>[
             ProductScreen(),
@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
           currentIndex: _selectedIndex,
         ),
-        // Enhancement 2: the old "Chat" bottom nav tab is now a
+        // Lab Activity 3 - Enhancement 2: the old "Chat" bottom nav tab is now a
         // FloatingActionButton, hidden while the Cart tab is active.
         floatingActionButton: _selectedIndex == 1
             ? null

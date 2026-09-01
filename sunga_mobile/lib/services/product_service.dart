@@ -16,7 +16,7 @@ class ProductService {
     }
   }
 
-  // Enhancement 1: cart line items only carry a title/price/thumbnail
+  // Lab Activity 3 - Enhancement 1: cart line items only carry a title/price/thumbnail
   // summary, so opening DetailScreen from the cart needs the full product
   // fetched by id.
   Future<Product> getProductById(int id) async {

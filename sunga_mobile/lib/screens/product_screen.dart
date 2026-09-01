@@ -24,7 +24,7 @@ class ProductScreen extends StatefulWidget {
 class _ProductScreenState extends State<ProductScreen> {
   late final Future<List<Product>> _productsFuture;
 
-  // Enhancement 1: holds the current search bar text used to filter the product list.
+  // Lab Activity 2 - Enhancement 1: holds the current search bar text used to filter the product list.
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -48,7 +48,7 @@ class _ProductScreenState extends State<ProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Enhancement 1: Search bar above the product list, filters the
+            // Lab Activity 2 - Enhancement 1: Search bar above the product list, filters the
             TextField(
               controller: _searchController,
               onChanged: (value) {
@@ -91,7 +91,7 @@ class _ProductScreenState extends State<ProductScreen> {
                 }
 
                 final allProducts = snapshot.data ?? [];
-                // Enhancement 1: filter the fetched products by the search query.
+                // Lab Activity 2 - Enhancement 1: filter the fetched products by the search query.
                 final products = _searchQuery.isEmpty
                     ? allProducts
                     : allProducts
@@ -132,7 +132,7 @@ class _ProductScreenState extends State<ProductScreen> {
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: InkWell(
-                        // Enhancement 2: tapping a product card opens its
+                        // Lab Activity 2 - Enhancement 2: tapping a product card opens its
                         // details page.
                         onTap: () {
                           Navigator.push(

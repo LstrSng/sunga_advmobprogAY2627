@@ -8,7 +8,7 @@ import '../providers/theme_provider.dart';
 // widgets
 import '../widgets/custom_text.dart';
 
-// Enhancement 3: settings page that hosts the dark/light mode switch
+// Lab Activity 2 - Enhancement 3: settings page that hosts the dark/light mode switch
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 

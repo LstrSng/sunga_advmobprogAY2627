@@ -11,7 +11,7 @@ import '../services/user_service.dart';
 // widgets
 import '../widgets/custom_text.dart';
 
-// Enhancement 3: Profile tab built on the User model — reads the signed-in
+// Lab Activity 4 - Enhancement 3: Profile tab built on the User model — reads the signed-in
 // user from UserService (already persisted to SharedPreferences during
 // splash/sign-in), so no arguments need to be passed in.
 class ProfileScreen extends StatefulWidget {

@@ -10,7 +10,7 @@ import '../services/user_service.dart';
 // widgets
 import '../widgets/custom_text.dart';
 
-// Enhancement 1: splash UI that gates the app on persistent authentication —
+// Lab Activity 4 - Enhancement 1: splash UI that gates the app on persistent authentication —
 // UserService.isLoggedIn() checks SharedPreferences for a saved session
 // before deciding whether to land on /home or /signin.
 class SplashScreen extends StatefulWidget {
