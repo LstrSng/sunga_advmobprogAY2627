@@ -28,9 +28,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadProfileName();
   }
 
-  // Lab Activity 4 - Enhancement 3: the Profile tab's header uses the saved user's first
-  // name, read the same way ProfileScreen reads it (via UserService).
   Future<void> _loadProfileName() async {
+    final firebaseUser = UserService().currentUser;
+    if (firebaseUser != null &&
+        (firebaseUser.displayName?.isNotEmpty ?? false)) {
+      if (!mounted) return;
+      setState(() {
+        _profileName = firebaseUser.displayName!;
+      });
+      return;
+    }
     final user = await UserService().getUser();
     if (!mounted || user.firstName.isEmpty) return;
     setState(() {
@@ -52,10 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: onProfileTab ? brandNavy : null,
           foregroundColor: onProfileTab ? Colors.white : null,
           title: (_selectedIndex == 0)
-              ? Image.asset(
-                  'assets/images/nubdexchange_logo.png',
-                  scale: 11.sp,
-                )
+              ? Image.asset('assets/images/nubdexchange_logo.png', scale: 11.sp)
               : CustomText(
                   text: (_selectedIndex == 1) ? 'Cart' : _profileName,
                   fontSize: 20.sp,

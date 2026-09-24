@@ -32,6 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkAuthentication() async {
     await Future.delayed(const Duration(milliseconds: 5000));
 
+    // Lab Activity 5 - Enhancement 2: Keeps both Firebase and DummyJSON users logged in.
     final loggedIn = await _userService.isLoggedIn();
 
     if (!mounted) return;
@@ -53,10 +54,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/images/nubdexchange_logo.png',
-              width: 96.w,
-            ),
+            Image.asset('assets/images/nubdexchange_logo.png', width: 96.w),
             SizedBox(height: 16.h),
             CustomText(
               text: 'NUBD Exchange',

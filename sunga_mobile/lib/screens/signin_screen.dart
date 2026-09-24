@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // constants
 import '../constants.dart';
@@ -10,9 +11,7 @@ import '../services/user_service.dart';
 // widgets
 import '../widgets/custom_text.dart';
 
-// Lab Activity 4 - Enhancement 2: sign-in UI built around UserService's login/save flow —
-// the form only handles input/validation/loading state, all the
-// authentication logic (loginUser + saveUserData) lives in UserService.
+// Lab Activity 5 - Enhancement 2: Sign-in supports DummyJSON and Firebase Auth.
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
 
@@ -22,51 +21,56 @@ class SigninScreen extends StatefulWidget {
 
 class _SigninScreenState extends State<SigninScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   void _login() async {
-    UserService userService = UserService();
-    setState(() {
-      _isLoading = true;
-    });
-    if (_formKey.currentState!.validate()) {
-      try {
-        final response = await userService.loginUser(
-          _usernameController.text,
-          _passwordController.text,
-        );
+    if (!_formKey.currentState!.validate()) return;
 
-        // Save user data to SharedPreferences
-        await userService.saveUserData(response);
+    setState(() => _isLoading = true);
+
+    final identifier = _identifierController.text.trim();
+    final password = _passwordController.text;
+    // Lab Activity 5 - Enhancement 2: Input with @ uses Firebase, otherwise DummyJSON.
+    final isEmail = identifier.contains('@');
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userService = UserService();
+
+      if (isEmail) {
+        // Lab Activity 5 - Enhancement 2: Firebase sign in, then refresh the token.
+        await userService.signIn(email: identifier, password: password);
+        await prefs.setString('loginType', 'firebase');
+        await userService.getToken(forceRefresh: true);
 
         if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        // Lab Activity 5 - Enhancement 2: DummyJSON sign in through /auth/login.
+        // loginUser already saves the response to SharedPreferences.
+        final response = await userService.loginUser(identifier, password);
+        await prefs.setString('loginType', 'dummyjson');
 
+        if (!mounted) return;
+        setState(() => _isLoading = false);
         Navigator.pushReplacementNamed(context, '/home', arguments: response);
-      } catch (e) {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Login failed: ${e.toString()}')));
       }
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Login failed: ${e.toString()}')));
     }
   }
 
@@ -104,12 +108,12 @@ class _SigninScreenState extends State<SigninScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: 40.h),
+                SizedBox(height: 32.h),
                 TextFormField(
-                  controller: _usernameController,
-                  decoration: _fieldDecoration('Username'),
+                  controller: _identifierController,
+                  decoration: _fieldDecoration('Username or Email'),
                   validator: (value) => (value == null || value.isEmpty)
-                      ? 'Username is required'
+                      ? 'Username or Email is required'
                       : null,
                 ),
                 SizedBox(height: 16.h),
@@ -152,6 +156,26 @@ class _SigninScreenState extends State<SigninScreen> {
                             ),
                     ),
                   ),
+                ),
+                SizedBox(height: 20.h),
+                // Lab Activity 5 - Enhancement 2: Link to sign-up screen.
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomText(
+                      text: "Don't have an account? ",
+                      fontSize: 13.sp,
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/signup'),
+                      child: CustomText(
+                        text: 'Sign Up',
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color: brandNavy,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
