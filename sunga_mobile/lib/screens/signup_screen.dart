@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,6 +11,7 @@ import '../services/user_service.dart';
 
 // widgets
 import '../widgets/custom_text.dart';
+import '../utils/error_message.dart';
 
 // Lab Activity 5 - Enhancement 2: Signup screen with Firebase Auth.
 class SignupScreen extends StatefulWidget {
@@ -29,6 +31,11 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+
+  // Lab Activity 6: Letters (including ñ and accents), spaces, hyphens and apostrophes.
+  static final _namePattern = RegExp(
+    r"^[a-zA-ZÀ-ÿñÑ]+([ '\-][a-zA-ZÀ-ÿñÑ]+)*$",
+  );
 
   @override
   void dispose() {
@@ -75,6 +82,13 @@ class _SignupScreenState extends State<SignupScreen> {
       await prefs.setString('age', _ageController.text.trim());
       await userService.getToken(forceRefresh: true);
 
+      // Lab Activity 6 - Enhancement 1: Add the new user to the chat list.
+      await userService.trySaveUserToFirestore(
+        firstName: _fNameController.text.trim(),
+        lastName: _lNameController.text.trim(),
+        username: _usernameController.text.trim(),
+      );
+
       // DummyJSON /users/add (simulated — see dummyjson.com/users). Non-fatal:
       // the Firebase account is already created if this request fails.
       try {
@@ -98,9 +112,9 @@ class _SignupScreenState extends State<SignupScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage(e))));
     }
   }
 
@@ -129,37 +143,71 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Lab Activity 6: Names accept letters only (spaces, - and ' allowed).
                 // First Name
                 TextFormField(
+                  // Lab Activity 6: Only check a field after the user types in it.
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: _fNameController,
                   decoration: _fieldDecoration('First Name'),
-                  validator: (value) => (value == null || value.isEmpty)
-                      ? 'First name is required'
-                      : null,
+                  textCapitalization: TextCapitalization.words,
+                  validator: (value) {
+                    final name = (value ?? '').trim();
+                    if (name.isEmpty) {
+                      return 'First name is required';
+                    }
+                    if (name.length < 2) {
+                      return 'First name must be at least 2 letters';
+                    }
+                    if (!_namePattern.hasMatch(name)) {
+                      return 'First name can only contain letters';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(height: 12.h),
 
                 // Last Name
                 TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: _lNameController,
                   decoration: _fieldDecoration('Last Name'),
-                  validator: (value) => (value == null || value.isEmpty)
-                      ? 'Last name is required'
-                      : null,
+                  textCapitalization: TextCapitalization.words,
+                  validator: (value) {
+                    final name = (value ?? '').trim();
+                    if (name.isEmpty) {
+                      return 'Last name is required';
+                    }
+                    if (name.length < 2) {
+                      return 'Last name must be at least 2 letters';
+                    }
+                    if (!_namePattern.hasMatch(name)) {
+                      return 'Last name can only contain letters';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(height: 12.h),
 
+                // Lab Activity 6: Age must be a whole number from 13 to 100.
                 // Age
                 TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: _ageController,
-                  decoration: _fieldDecoration('Age'),
+                  decoration: _fieldDecoration('Age').copyWith(counterText: ''),
                   keyboardType: TextInputType.number,
+                  maxLength: 3,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Age is required';
                     }
-                    if (int.tryParse(value) == null) {
+                    final age = int.tryParse(value);
+                    if (age == null) {
                       return 'Enter a valid number';
+                    }
+                    if (age < 13 || age > 100) {
+                      return 'Age must be between 13 and 100';
                     }
                     return null;
                   },
@@ -168,6 +216,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 // Contact Number
                 TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: _contactNoController,
                   decoration: _fieldDecoration('Contact Number'),
                   keyboardType: TextInputType.phone,
@@ -177,27 +226,53 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 SizedBox(height: 12.h),
 
+                // Lab Activity 6: Username is 4-20 letters, numbers, _ or .
+                // and must start with a letter.
                 // Username
                 TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: _usernameController,
                   decoration: _fieldDecoration('Username'),
-                  validator: (value) => (value == null || value.isEmpty)
-                      ? 'Username is required'
-                      : null,
+                  autocorrect: false,
+                  validator: (value) {
+                    final username = (value ?? '').trim();
+                    if (username.isEmpty) {
+                      return 'Username is required';
+                    }
+                    if (username.length < 4 || username.length > 20) {
+                      return 'Username must be 4 to 20 characters';
+                    }
+                    if (!RegExp(r'^[a-zA-Z]').hasMatch(username)) {
+                      return 'Username must start with a letter';
+                    }
+                    if (!RegExp(r'^[a-zA-Z0-9_.]+$').hasMatch(username)) {
+                      return 'Use only letters, numbers, _ or .';
+                    }
+                    return null;
+                  },
                 ),
                 SizedBox(height: 12.h),
 
+                // Lab Activity 6: Email must be a valid email address.
                 // Email Address
                 TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: _emailController,
-                  decoration: _fieldDecoration('Email Address'),
+                  decoration: _fieldDecoration(
+                    'Email Address',
+                  ).copyWith(hintText: 'name@example.com'),
                   keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    final email = (value ?? '').trim();
+                    if (email.isEmpty) {
                       return 'Email is required';
                     }
-                    if (!value.contains('@')) {
-                      return 'Enter a valid email';
+                    if (!RegExp(
+                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                      caseSensitive: false,
+                    ).hasMatch(email)) {
+                      return 'Enter a valid email (e.g. name@example.com)';
                     }
                     return null;
                   },
@@ -207,6 +282,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 // Lab Activity 5 - Enhancement 2: Password validation (required, at least 6 characters).
                 // Password (min 6 characters)
                 TextFormField(
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: _passwordController,
                   obscureText: true,
                   decoration: _fieldDecoration('Password'),

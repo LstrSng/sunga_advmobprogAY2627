@@ -10,6 +10,7 @@ import '../services/user_service.dart';
 
 // widgets
 import '../widgets/custom_text.dart';
+import '../utils/error_message.dart';
 
 // Lab Activity 5 - Enhancement 2: Sign-in supports DummyJSON and Firebase Auth.
 class SigninScreen extends StatefulWidget {
@@ -37,7 +38,11 @@ class _SigninScreenState extends State<SigninScreen> {
 
     setState(() => _isLoading = true);
 
-    final identifier = _identifierController.text.trim();
+    // Lab Activity 6: Ignore stray spaces/quotes around the username or email.
+    final identifier = _identifierController.text.trim().replaceAll(
+      RegExp(r'''^["']+|["']+$'''),
+      '',
+    );
     final password = _passwordController.text;
     // Lab Activity 5 - Enhancement 2: Input with @ uses Firebase, otherwise DummyJSON.
     final isEmail = identifier.contains('@');
@@ -51,6 +56,8 @@ class _SigninScreenState extends State<SigninScreen> {
         await userService.signIn(email: identifier, password: password);
         await prefs.setString('loginType', 'firebase');
         await userService.getToken(forceRefresh: true);
+        // Lab Activity 6 - Enhancement 1: Make sure the user is in the chat list.
+        await userService.trySaveUserToFirestore();
 
         if (!mounted) return;
         setState(() => _isLoading = false);
@@ -70,7 +77,7 @@ class _SigninScreenState extends State<SigninScreen> {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Login failed: ${e.toString()}')));
+      ).showSnackBar(SnackBar(content: Text(errorMessage(e))));
     }
   }
 

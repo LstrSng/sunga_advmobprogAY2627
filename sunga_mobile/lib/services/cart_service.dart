@@ -22,11 +22,13 @@ class CartService {
         // User has no saved cart on DummyJSON
         return [];
       } else {
-        throw Exception('Failed to load cart for user $userId (Status: ${response.statusCode})');
+        throw Exception(
+          'Could not load your cart (error ${response.statusCode}). Please try again.',
+        );
       }
     } catch (e) {
       if (e is Exception) rethrow;
-      throw Exception('Network error: $e');
+      throw Exception('Could not load your cart. Please try again.');
     }
   }
 
@@ -37,6 +39,11 @@ class CartService {
     required int userId,
     required List<Map<String, dynamic>> products,
   }) async {
+    // Lab Activity 6: DummyJSON carts need a DummyJSON user id; Firebase
+    // accounts don't have one (id 0), which DummyJSON rejects with a 404.
+    if (userId <= 0) {
+      throw Exception('The cart is only available for DummyJSON accounts.');
+    }
     final response = await http
         .post(
           Uri.parse('$host/carts/add'),
@@ -48,7 +55,9 @@ class CartService {
     if (response.statusCode == 200 || response.statusCode == 201) {
       return Cart.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to add to cart (Status: ${response.statusCode})');
+      throw Exception(
+        'Could not update your cart (error ${response.statusCode}). Please try again.',
+      );
     }
   }
 }

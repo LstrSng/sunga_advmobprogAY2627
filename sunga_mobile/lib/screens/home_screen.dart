@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'product_screen.dart';
 import 'cart_screen.dart';
 import 'profile_screen.dart';
+import 'chat_screen.dart';
 
 import '../constants.dart';
 import '../services/user_service.dart';
@@ -110,13 +111,37 @@ class _HomeScreenState extends State<HomeScreen> {
             : FloatingActionButton(
                 backgroundColor: Colors.deepPurple.shade50,
                 foregroundColor: Colors.deepPurple.shade700,
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Chat coming soon')),
-                  );
-                },
+                // Lab Activity 6: the FAB now opens the Chat List.
+                onPressed: _openChatList,
                 child: const Icon(Icons.chat),
               ),
+      ),
+    );
+  }
+
+  // Lab Activity 6: Chat uses Firestore, so it needs a Firebase (email) login.
+  void _openChatList() {
+    if (UserService().currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Log in with your email account to use chat'),
+        ),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: CustomText(
+              text: 'Chats',
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          body: const ChatScreen(),
+        ),
       ),
     );
   }

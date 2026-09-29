@@ -6,6 +6,7 @@ import '../models/product.dart';
 
 // services
 import '../services/product_service.dart';
+import '../utils/error_message.dart';
 
 // screens
 import 'detail_screen.dart';
@@ -21,7 +22,7 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
-  late final Future<List<Product>> _productsFuture;
+  late Future<List<Product>> _productsFuture;
 
   // Lab Activity 2 - Enhancement 1: holds the current search bar text used to filter the product list.
   final TextEditingController _searchController = TextEditingController();
@@ -80,11 +81,30 @@ class _ProductScreenState extends State<ProductScreen> {
                   );
                 }
 
+                // Lab Activity 6: readable error with a Retry button.
                 if (snapshot.hasError) {
                   return Center(
-                    child: CustomText(
-                      text: 'Error: ${snapshot.error}',
-                      fontSize: 14.sp,
+                    child: Padding(
+                      padding: EdgeInsets.all(24.r),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CustomText(
+                            text: errorMessage(snapshot.error),
+                            fontSize: 14.sp,
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 12.h),
+                          ElevatedButton.icon(
+                            onPressed: () => setState(() {
+                              _productsFuture = ProductService()
+                                  .getAllProducts();
+                            }),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }

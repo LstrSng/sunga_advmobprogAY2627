@@ -10,6 +10,7 @@ import '../services/user_service.dart';
 
 // widgets
 import '../widgets/custom_text.dart';
+import '../utils/error_message.dart';
 
 // Lab Activity 2 - Enhancement 2: details page shown when a product card is tapped, displaying
 // the full product info (images, price, description, specs, reviews) fetched
@@ -53,7 +54,7 @@ class _DetailScreenState extends State<DetailScreen> {
         ),
       );
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Failed to add to cart: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(errorMessage(e))));
     }
   }
 

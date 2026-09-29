@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
 import '../models/user.dart' as app_user;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -154,6 +155,12 @@ class UserService {
 
   User? get currentUser => firebaseAuth.currentUser;
 
+  // Lab Activity 6: Throws a readable error instead of crashing on a null
+  // user when the session has expired.
+  User get _signedInUser =>
+      currentUser ??
+      (throw Exception('You are not logged in. Please log in again.'));
+
   Stream<User?> get authStateChanges => firebaseAuth.authStateChanges();
 
   // Lab Activity 5 - Enhancement 2: Firebase token refresh.
@@ -190,6 +197,53 @@ class UserService {
     );
   }
 
+  // Lab Activity 6 - Enhancement 1: Saves the signed-in Firebase user to the
+  // Firestore `Users` collection so they appear in the chat list.
+  Future<void> saveUserToFirestore({
+    String? firstName,
+    String? lastName,
+    String? username,
+  }) async {
+    final user = currentUser;
+    if (user == null) return;
+
+    final doc = FirebaseFirestore.instance.collection('Users').doc(user.uid);
+    final existing = (await doc.get()).data() ?? {};
+    final data = <String, dynamic>{'uid': user.uid, 'email': user.email ?? ''};
+
+    if (firstName != null && firstName.isNotEmpty) {
+      data['firstName'] = firstName;
+    } else if ((existing['firstName'] ?? '').toString().isEmpty) {
+      // Accounts made before Lab Activity 6 have no Users doc yet.
+      data['firstName'] = (user.displayName?.isNotEmpty ?? false)
+          ? user.displayName
+          : (user.email ?? '').split('@').first;
+    }
+    if (lastName != null && lastName.isNotEmpty) data['lastName'] = lastName;
+    if (username != null && username.isNotEmpty) data['username'] = username;
+
+    await doc.set(data, SetOptions(merge: true));
+  }
+
+  // Lab Activity 6 - Enhancement 1: Same as saveUserToFirestore, but a
+  // Firestore problem (e.g. security rules) won't stop sign-up or login.
+  // The user is saved again on their next login.
+  Future<void> trySaveUserToFirestore({
+    String? firstName,
+    String? lastName,
+    String? username,
+  }) async {
+    try {
+      await saveUserToFirestore(
+        firstName: firstName,
+        lastName: lastName,
+        username: username,
+      );
+    } catch (e) {
+      debugPrint('Could not save user to Firestore: $e');
+    }
+  }
+
   // Lab Activity 5 - Enhancement 1: Signs out the Firebase user.
   Future<void> signOut() async {
     await firebaseAuth.signOut();
@@ -197,7 +251,7 @@ class UserService {
 
   // Lab Activity 5 - Enhancement 1: Updates the Firebase display name (username).
   Future<void> updateUsername({required String username}) async {
-    await currentUser!.updateDisplayName(username);
+    await _signedInUser.updateDisplayName(username);
   }
 
   // Lab Activity 5 - Enhancement 1: Re-checks the password, then deletes the Firebase account.
@@ -210,8 +264,8 @@ class UserService {
       password: password,
     );
 
-    await currentUser!.reauthenticateWithCredential(credential);
-    await currentUser!.delete();
+    await _signedInUser.reauthenticateWithCredential(credential);
+    await _signedInUser.delete();
     await firebaseAuth.signOut();
   }
 
@@ -226,7 +280,7 @@ class UserService {
       password: currentPassword,
     );
 
-    await currentUser!.reauthenticateWithCredential(credential);
-    await currentUser!.updatePassword(newPassword);
+    await _signedInUser.reauthenticateWithCredential(credential);
+    await _signedInUser.updatePassword(newPassword);
   }
 }

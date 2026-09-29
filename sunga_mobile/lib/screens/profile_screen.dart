@@ -7,6 +7,7 @@ import '../services/user_service.dart';
 
 // widgets
 import '../widgets/custom_text.dart';
+import '../utils/error_message.dart';
 
 // Lab Activity 5 - Enhancement 3: Profile with LoginType-based data display,
 // update username, change password, delete account, and logout.
@@ -94,9 +95,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               } catch (e) {
                 if (!ctx.mounted) return;
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed: ${e.toString()}')),
-                );
+                if (!mounted) return;
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(errorMessage(e))));
               }
             },
             child: const Text('Update'),
@@ -168,9 +170,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               } catch (e) {
                 if (!ctx.mounted) return;
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed: ${e.toString()}')),
-                );
+                if (!mounted) return;
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(errorMessage(e))));
               }
             },
             child: const Text('Change'),
@@ -231,9 +234,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               } catch (e) {
                 if (!ctx.mounted) return;
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed: ${e.toString()}')),
-                );
+                if (!mounted) return;
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(errorMessage(e))));
               }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
@@ -507,17 +511,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 12.h),
+      padding: EdgeInsets.symmetric(vertical: 14.h),
+      // Lab Activity 6: values are right-aligned so every row lines up at the
+      // card's edge (Spacer + Flexible was splitting the space unevenly).
       child: Row(
         children: [
           Icon(icon, size: 18.sp, color: Colors.amber.shade800),
-          SizedBox(width: 10.w),
+          SizedBox(width: 12.w),
           CustomText(text: label, fontSize: 13.sp, fontWeight: FontWeight.w600),
-          const Spacer(),
-          Flexible(
+          SizedBox(width: 16.w),
+          Expanded(
             child: CustomText(
               text: value,
               fontSize: 13.sp,
+              textAlign: TextAlign.right,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),

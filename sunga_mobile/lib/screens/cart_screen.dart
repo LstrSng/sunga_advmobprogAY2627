@@ -8,6 +8,7 @@ import '../models/cart.dart';
 import '../services/cart_service.dart';
 import '../services/product_service.dart';
 import '../services/user_service.dart';
+import '../utils/error_message.dart';
 
 // screens
 import 'detail_screen.dart';
@@ -60,7 +61,7 @@ class _CartScreenState extends State<CartScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = errorMessage(e);
         _loading = false;
       });
     }
@@ -98,7 +99,7 @@ class _CartScreenState extends State<CartScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to update cart: $e')));
+      ).showSnackBar(SnackBar(content: Text(errorMessage(e))));
     }
   }
 
@@ -116,7 +117,7 @@ class _CartScreenState extends State<CartScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to load product: $e')));
+      ).showSnackBar(SnackBar(content: Text(errorMessage(e))));
     }
   }
 
@@ -133,7 +134,11 @@ class _CartScreenState extends State<CartScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CustomText(text: 'Error: $_error', fontSize: 14.sp),
+              CustomText(
+                text: _error!,
+                fontSize: 14.sp,
+                textAlign: TextAlign.center,
+              ),
               SizedBox(height: 12.h),
               ElevatedButton.icon(
                 onPressed: _loadCart,
